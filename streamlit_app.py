@@ -10,7 +10,7 @@ st.title("BadgeForge - Professional Achievement Badge Generator")
 st.header("Enter Achievement Details")
 recipient_name = st.text_input("Recipient Name")
 
-# New achievement categories
+# Define achievement categories and specific achievements
 achievements_dict = {
     "Reading Progress Milestones": [
         "Started first book",
@@ -38,11 +38,8 @@ achievements_dict = {
     ]
 }
 
-# Create a list of categories based on the keys of the achievements_dict
 categories = list(achievements_dict.keys())
 category = st.selectbox("Achievement Category", categories)
-
-# Specific achievement selection based on chosen category
 achievement = st.selectbox("Select Specific Achievement", achievements_dict[category])
 
 issue_date = st.date_input("Issue Date", date.today())
@@ -50,7 +47,7 @@ notes = st.text_area("Optional Notes or Evidence")
 evidence = st.file_uploader("Upload Evidence (optional)", type=["jpg", "png", "pdf"])
 
 # ----- Badge Generation and Preview -----
-if st.button("Generate Certificate"):
+if st.button("Generate Badge"):
     if not recipient_name:
         st.error("Please enter a recipient name.")
     else:
@@ -59,72 +56,81 @@ if st.button("Generate Certificate"):
         qr_encoded = urllib.parse.quote(qr_data)
         qr_url = f"https://api.qrserver.com/v1/create-qr-code/?data={qr_encoded}&size=100x100"
 
-        # Create the certificate as an HTML string.
-        certificate_html = f"""
+        # Create the circular badge as an HTML string.
+        badge_html = f"""
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="UTF-8">
-          <title>Certificate of Achievement</title>
+          <title>Achievement Badge</title>
           <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
           <style>
             body {{
-              font-family: Arial, sans-serif;
-              text-align: center;
+              background-color: #f0f0f0;
               margin: 0;
               padding: 0;
-              background-color: #f0f0f0;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              height: 100vh;
             }}
-            .certificate {{
-              width: 800px;
-              height: 600px;
-              background-color: white;
+            .badge {{
+              width: 400px;
+              height: 400px;
               border: 10px solid gold;
-              margin: 20px auto;
-              padding: 20px;
+              border-radius: 50%;
+              background: radial-gradient(circle, #003366, #0055a5);
               position: relative;
               box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            }}
-            .header {{
-              background-color: #003366;
-              color: gold;
+              color: white;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
               padding: 20px;
-              font-size: 36px;
+              text-align: center;
             }}
             .recipient {{
               font-family: 'Great Vibes', cursive;
-              font-size: 48px;
-              margin: 30px 0;
-              color: #003366;
+              font-size: 36px;
+              margin: 10px 0;
             }}
-            .details {{
-              font-size: 24px;
-              margin: 20px 0;
+            .achievement {{
+              font-size: 20px;
+              margin: 10px 0;
             }}
-            .footer {{
-              position: absolute;
-              bottom: 20px;
-              width: 100%;
+            .issue-date {{
               font-size: 16px;
+              margin: 10px 0;
+            }}
+            .notes {{
+              font-size: 14px;
+              margin: 10px 0;
             }}
             .qr-code {{
               position: absolute;
               bottom: 20px;
               right: 20px;
+              width: 80px;
+              height: 80px;
+              border: 2px solid white;
+              border-radius: 50%;
+              overflow: hidden;
+              background: white;
+            }}
+            .qr-code img {{
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
             }}
           </style>
         </head>
         <body>
-          <div class="certificate">
-            <div class="header">Certificate of Achievement</div>
+          <div class="badge">
             <div class="recipient">{recipient_name}</div>
-            <div class="details">
-              has been recognized for <strong>{achievement}</strong> in the category <strong>{category}</strong>.<br>
-              Issued on: {issue_date.strftime('%B %d, %Y')}
-            </div>
-            <div class="footer">
-              {notes if notes else ""}
-            </div>
+            <div class="achievement">{achievement}<br>({category})</div>
+            <div class="issue-date">Issued on: {issue_date.strftime('%B %d, %Y')}</div>
+            <div class="notes">{notes if notes else ""}</div>
             <div class="qr-code">
               <img src="{qr_url}" alt="QR Code">
             </div>
@@ -132,16 +138,15 @@ if st.button("Generate Certificate"):
         </body>
         </html>
         """
-        st.success("Certificate generated successfully!")
+        st.success("Badge generated successfully!")
 
-        # Preview the certificate in the app.
-        components.html(certificate_html, height=650, scrolling=True)
+        # Preview the badge in the app.
+        components.html(badge_html, height=500, scrolling=True)
 
         # ----- Export Options -----
-        # Download the certificate as an HTML file.
-        st.download_button("Download Certificate as HTML",
-                           certificate_html,
-                           file_name="certificate.html",
+        st.download_button("Download Badge as HTML",
+                           badge_html,
+                           file_name="badge.html",
                            mime="text/html")
 
         # ----- Achievement Tracking Dashboard -----
@@ -161,4 +166,5 @@ if "achievements" in st.session_state and st.session_state["achievements"]:
     st.dataframe(df)
 else:
     st.info("No achievements generated yet.")
+
 
