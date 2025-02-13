@@ -6,11 +6,7 @@ import pandas as pd
 
 st.title("BadgeForge - Professional Achievement Badge Generator")
 
-# ----- User Input Section -----
-st.header("Enter Achievement Details")
-recipient_name = st.text_input("Recipient Name")
-
-# Define achievement categories and specific achievements
+# Achievement categories and specific achievements
 achievements_dict = {
     "Reading Progress Milestones": [
         "Started first book",
@@ -38,53 +34,111 @@ achievements_dict = {
     ]
 }
 
+# User Input Section
+st.header("Enter Achievement Details")
+recipient_name = st.text_input("Recipient Name")
 categories = list(achievements_dict.keys())
 category = st.selectbox("Achievement Category", categories)
 achievement = st.selectbox("Select Specific Achievement", achievements_dict[category])
-
 issue_date = st.date_input("Issue Date", date.today())
 notes = st.text_area("Optional Notes or Evidence")
-evidence = st.file_uploader("Upload Evidence (optional)", type=["jpg", "png", "pdf"])
 
-# ----- Badge Generation and Preview -----
 if st.button("Generate Badge"):
     if not recipient_name:
         st.error("Please enter a recipient name.")
     else:
-        # Generate QR code URL using an online service.
-        qr_data = f"Name: {recipient_name}\nAchievement: {achievement}\nDate: {issue_date}"
+        # Generate QR code URL
+        qr_data = "Name: " + recipient_name + "\nAchievement: " + achievement + "\nDate: " + str(issue_date)
         qr_encoded = urllib.parse.quote(qr_data)
-        qr_url = f"https://api.qrserver.com/v1/create-qr-code/?data={qr_encoded}&size=100x100"
+        qr_url = "https://api.qrserver.com/v1/create-qr-code/?data=" + qr_encoded + "&size=100x100"
 
-        # Create the circular badge as an HTML string with a modern and sleek design.
-        badge_html = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>Achievement Badge</title>
-          <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&family=Great+Vibes&display=swap" rel="stylesheet">
-          <style>
-            body {{
-              background-color: #f9f9f9;
-              margin: 0;
-              padding: 0;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              height: 100vh;
-              font-family: 'Roboto', sans-serif;
-            }}
-            .badge {{
-              width: 400px;
-              height: 400px;
-              border-radius: 50%;
-              background: linear-gradient(135deg, #1F2937, #4B5563);
-              position: relative;
-              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-              display: flex;
-              flex-direction: column;
-              align-item
+        # Create HTML content
+        html_content = """
+            <div style="
+                max-width: 600px;
+                margin: 20px auto;
+                padding: 20px;
+                border: 2px solid #1F2937;
+                border-radius: 10px;
+                text-align: center;
+                font-family: Arial, sans-serif;
+                background: linear-gradient(135deg, #1F2937, #4B5563);
+                color: white;
+            ">
+                <h1 style="
+                    font-size: 24px;
+                    margin-bottom: 20px;
+                    color: white;
+                ">Achievement Badge</h1>
+                <div style="
+                    font-size: 32px;
+                    margin-bottom: 15px;
+                    font-family: 'Times New Roman', serif;
+                    color: #FFD700;
+                ">{}</div>
+                <div style="
+                    font-size: 20px;
+                    margin-bottom: 15px;
+                ">{}</div>
+                <div style="
+                    font-size: 18px;
+                    margin-bottom: 15px;
+                    font-style: italic;
+                ">{}</div>
+                <div style="
+                    font-size: 16px;
+                    margin-bottom: 15px;
+                ">Issued on: {}</div>
+                <div style="
+                    font-size: 14px;
+                    margin-bottom: 20px;
+                ">{}</div>
+                <img src="{}" alt="QR Code" style="
+                    width: 100px;
+                    height: 100px;
+                    border: 2px solid white;
+                    border-radius: 10px;
+                ">
+            </div>
+        """.format(
+            recipient_name,
+            achievement,
+            category,
+            issue_date.strftime("%B %d, %Y"),
+            notes if notes else "",
+            qr_url
+        )
+
+        # Display badge
+        st.success("Badge generated successfully!")
+        components.html(html_content, height=600)
+
+        # Save to achievements list
+        if "achievements" not in st.session_state:
+            st.session_state["achievements"] = []
+        
+        st.session_state["achievements"].append({
+            "Name": recipient_name,
+            "Category": category,
+            "Achievement": achievement,
+            "Issue Date": issue_date.strftime("%Y-%m-%d")
+        })
+
+        # Add download button
+        st.download_button(
+            "Download Badge as HTML",
+            html_content,
+            file_name="badge.html",
+            mime="text/html"
+        )
+
+# Display Achievement Dashboard
+st.header("Achievement Tracking Dashboard")
+if "achievements" in st.session_state and st.session_state["achievements"]:
+    df = pd.DataFrame(st.session_state["achievements"])
+    st.dataframe(df)
+else:
+    st.info("No achievements generated yet.")
 
 
 
