@@ -9,28 +9,42 @@ st.title("BadgeForge - Professional Achievement Badge Generator")
 # ----- User Input Section -----
 st.header("Enter Achievement Details")
 recipient_name = st.text_input("Recipient Name")
-achievement_categories = ["Reading", "Volunteer Work", "Well-being"]
-category = st.selectbox("Achievement Category", achievement_categories)
 
-# Specific achievement options per category
+# New achievement categories
 achievements_dict = {
-    "Reading": [
-        "10 Leadership Books (Annual)",
-        "20 Professional Development Books",
-        "Book Club Leadership"
+    "Reading Progress Milestones": [
+        "Started first book",
+        "Completed 1 book",
+        "Completed 5 books",
+        "Completed 10 books",
+        "Completed 20 books"
     ],
-    "Volunteer Work": [
-        "10 Hours Community Service",
-        "25 Hours Mentoring",
-        "50 Hours Social Impact"
+    "Volunteer Milestones": [
+        "Completed 10 Hours Community Service",
+        "Completed 25 Hours Mentoring",
+        "Completed 50 Hours Social Impact",
+        "Volunteer of the Month"
     ],
-    "Well-being": [
+    "Pharmacy Informatics APPE Rotations": [
+        "Completed Basic Informatics Rotation",
+        "Completed Advanced Informatics Rotation",
+        "Completed Informatics Research Project",
+        "Exemplary Performance in APPE Rotation"
+    ],
+    "Well-being Initiatives": [
         "Well-being Book Club Participation",
         "Mindfulness Program Completion",
         "Health & Wellness Champion"
     ]
 }
+
+# Create a list of categories based on the keys of the achievements_dict
+categories = list(achievements_dict.keys())
+category = st.selectbox("Achievement Category", categories)
+
+# Specific achievement selection based on chosen category
 achievement = st.selectbox("Select Specific Achievement", achievements_dict[category])
+
 issue_date = st.date_input("Issue Date", date.today())
 notes = st.text_area("Optional Notes or Evidence")
 evidence = st.file_uploader("Upload Evidence (optional)", type=["jpg", "png", "pdf"])
@@ -124,7 +138,7 @@ if st.button("Generate Certificate"):
         components.html(certificate_html, height=650, scrolling=True)
 
         # ----- Export Options -----
-        # Download the certificate as an HTML file (user can open in a browser and print to PDF/PNG).
+        # Download the certificate as an HTML file.
         st.download_button("Download Certificate as HTML",
                            certificate_html,
                            file_name="certificate.html",
@@ -147,3 +161,4 @@ if "achievements" in st.session_state and st.session_state["achievements"]:
     st.dataframe(df)
 else:
     st.info("No achievements generated yet.")
+
